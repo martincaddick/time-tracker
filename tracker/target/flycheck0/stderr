@@ -1,0 +1,4 @@
+   Compiling tracker v0.3.0 (/mnt/c/ai/time-tracker/tracker)
+error: could not compile `tracker` (bin "tracker" test) due to 42 previous errors; 1 warning emitted
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `tracker` (bin "tracker") due to 42 previous errors; 1 warning emitted

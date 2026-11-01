@@ -1,0 +1,5 @@
+cargo:rerun-if-changed=src
+cargo:rerun-if-changed=Cargo.toml
+cargo:rerun-if-changed=build.rs
+cargo:rustc-env=BUILD_NUMBER=3
+cargo:rustc-env=BUILD_UNIX=1793566016
