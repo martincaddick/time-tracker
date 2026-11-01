@@ -1,0 +1,11 @@
+# Build artifacts
+target/
+tracker.exe
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDEs and editors
+.vscode/
+.idea/
