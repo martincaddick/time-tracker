@@ -96,18 +96,18 @@ h2{font-size:14px;margin:24px 0 8px}
 
 <script>
 // ---- Title cleanup: edit these to suit your apps (applied top to bottom). ----
-99	const CLEAN = [
-100	  /[\u200B-\u200D\u2060\uFEFF]/g,                                               // invisible chars (Edge puts one in "Microsoft Edge")
-101	  / and \d+ more pages?(?= [-\u2014\u2013] )/i,                                   // Edge: "and 4 more pages"
-102	  / [-\u2014\u2013] (?:Work [-\u2014\u2013] )?(Microsoft Edge|Mozilla Firefox|Google Chrome|Brave)\b.*$/i, // browser suffix (+ Edge profile; change "Work" to yours)
-103	  /\s*\|\s*Northforge Group Pty Ltd.*$/i,                                        // Teams/Outlook tail
-104	  / [-\u2014\u2013] Obsidian [\d.]+$/i,                                              // Obsidian app + version
-105	  / [-\u2014\u2013] (?:Learning Library|Personal Admin|FP - V2|NorthForge)$/i,       // Obsidian vault names: edit to yours
-106	];
-107	const MAX_TITLES = 8;
-108	const MIN_SECS = "__MIN_SECS__";   // 'Hide short rows' threshold, in seconds
-109	const MERGE_GAP = 300; // seconds: same-app segments closer than this are shown as one row
-110	// -----------------------------------------------------------------------------
+const CLEAN = [
+  /[\u200B-\u200D\u2060\uFEFF]/g,                                               // invisible chars (Edge puts one in "Microsoft Edge")
+  / and \d+ more pages?(?= [-\u2014\u2013] )/i,                                   // Edge: "and 4 more pages"
+  / [-\u2014\u2013] (?:Work [-\u2014\u2013] )?(Microsoft Edge|Mozilla Firefox|Google Chrome|Brave)\b.*$/i, // browser suffix (+ Edge profile; change "Work" to yours)
+  /\s*\|\s*Northforge Group Pty Ltd.*$/i,                                        // Teams/Outlook tail
+  / [-\u2014\u2013] Obsidian [\d.]+$/i,                                              // Obsidian app + version
+  / [-\u2014\u2013] (?:Learning Library|Personal Admin|FP - V2|NorthForge)$/i,       // Obsidian vault names: edit to yours
+];
+const MAX_TITLES = 8;
+const MIN_SECS = "__MIN_SECS__";   // 'Hide short rows' threshold, in seconds
+const MERGE_GAP = 300; // seconds: same-app segments closer than this are shown as one row
+// -----------------------------------------------------------------------------
 
 const $ = id => document.getElementById(id);
 let day = new Date(); day.setHours(0,0,0,0);

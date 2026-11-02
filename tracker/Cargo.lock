@@ -1256,8 +1256,10 @@ name = "tracker"
 version = "0.3.0"
 dependencies = [
  "rusqlite",
+ "serde",
  "serde_json",
  "tiny_http",
+ "toml",
  "tray-icon",
  "windows",
 ]

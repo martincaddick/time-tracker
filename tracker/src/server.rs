@@ -3,10 +3,13 @@
 //! header must be ours, which blocks other websites (CSRF / DNS rebinding)
 //! from reading or changing your activity data.
 
+use crate::{db, PORT};
+use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
 use std::fs;
 use std::io::{Cursor, Read};
-use std::path::Path;
+use tiny_http::{Header, Method, Request, Response, Server};
 
 type Resp = Response<Cursor<Vec<u8>>>;
 
@@ -101,6 +104,39 @@ fn handle(conn: &Connection, req: &mut Request) -> Result<Resp, String> {
 
     match (&method, path) {
         (Method::Get, "/") => Ok(reply(200, "text/html; charset=utf-8", index_html())),
+
+        (Method::Get, "/api/debug") => {
+            let count: i64 = conn
+                .query_row("SELECT count(*) FROM segments", [], |r| r.get(0))
+                .map_err(|e| e.to_string())?;
+            Ok(json_reply(
+                200,
+                json!({
+                    "segments_count": count,
+                    "db_connected": true
+                }),
+            ))
+        }
+
+        (Method::Get, "/api/debug/counts") => {
+            let count: i64 = conn
+                .query_row(
+                    "SELECT count(*) FROM segments WHERE start < ?1 AND end >= ?2",
+                    params![to, from],
+                    |r| r.get(0),
+                )
+                .map_err(|e| e.to_string())?;
+            Ok(json_reply(
+                200,
+                json!({
+                    "query_count": count,
+                    "params": {
+                        "to": to,
+                        "from": from
+                    }
+                }),
+            ))
+        }
 
         (Method::Get, "/api/segments") => {
             let mut st = conn

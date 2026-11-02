@@ -3,7 +3,9 @@
 
 mod collector;
 mod db;
+mod models;
 mod server;
+
 #[cfg(windows)]
 mod tray;
 
@@ -12,7 +14,11 @@ use std::sync::atomic::AtomicBool;
 pub const PORT: u16 = 47615;
 /// e.g. "v0.3.0 build 12"
 pub fn version() -> String {
-    format!("v{} build {}", env!("CARGO_PKG_VERSION"), env!("BUILD_NUMBER"))
+    format!(
+        "v{} build {}",
+        env!("CARGO_PKG_VERSION"),
+        env!("BUILD_NUMBER")
+    )
 }
 
 pub static PAUSED: AtomicBool = AtomicBool::new(false);
