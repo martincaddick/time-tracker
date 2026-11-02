@@ -1,4 +1,5 @@
-use rusqlite::Connection;
+use crate::models::Segment;
+use rusqlite::{params, Connection};
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -70,11 +71,52 @@ pub fn log(msg: &str) {
     }
 }
 
+pub fn insert_segment(conn: &Connection, segment: &Segment) -> rusqlite::Result<i64> {
+    conn.execute(
+        "INSERT INTO segments (process, title, start, end, active_secs, total_secs, entry_id)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+        params![
+            segment.process,
+            segment.title,
+            segment.start,
+            segment.end,
+            segment.active_secs,
+            segment.total_secs,
+            segment.entry_id,
+        ],
+    )?;
+    Ok(conn.last_insert_rowid())
+}
+
+pub fn get_all_segments(conn: &Connection) -> rusqlite::Result<Vec<Segment>> {
+    let mut stmt = conn.prepare("SELECT id, process, title, start, end, active_secs, total_secs, entry_id FROM segments ORDER BY start ASC")?;
+    let segment_iter = stmt.query_map([], |row| {
+        Ok(Segment {
+            id: row.get(0)?,
+            process: row.get(1)?,
+            title: row.get(2)?,
+            start: row.get(3)?,
+            end: row.get(4)?,
+            active_secs: row.get(5)?,
+            total_secs: row.get(6)?,
+            entry_id: row.get(7)?,
+        })
+    })?;
+
+    let mut segments = Vec::new();
+    for segment in segment_iter {
+        segments.push(segment?);
+    }
+    Ok(segments)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use rusqlite::Connection;
 
+    /// Tests that the database initialization correctly creates the required tables.
+    /// Verifies both the 'segments' and 'entries' tables exist in the schema.
     #[test]
     fn test_init_creates_tables() {
         // Use an in-memory database for testing
@@ -94,5 +136,39 @@ mod tests {
 
         assert!(tables.contains(&"segments".to_string()));
         assert!(tables.contains(&"entries".to_string()));
+    }
+
+    /// Tests that a segment can be successfully inserted into the database
+    /// and then retrieved using `get_all_segments`.
+    /// Verifies that the returned data matches the input.
+    #[test]
+    fn test_insert_and_get_segments() {
+        // Use an in-memory database for testing
+        let conn = Connection::open_in_memory().expect("Failed to open in-memory db");
+
+        // Initialize tables
+        init_db(&conn).expect("Failed to initialize database tables");
+
+        let segment = Segment {
+            id: 0, // SQLite will assign this
+            process: "Test Process".to_string(),
+            title: "Test Title".to_string(),
+            start: 1000,
+            end: 2000,
+            active_secs: 1000.0,
+            total_secs: 1000.0,
+            entry_id: None,
+        };
+
+        // Test insertion
+        let _id = insert_segment(&conn, &segment).expect("Failed to insert segment");
+
+        // Test retrieval
+        let segments = get_all_segments(&conn).expect("Failed to get segments");
+        assert_eq!(segments.len(), 1);
+        assert_eq!(segments[0].process, "Test Process");
+        assert_eq!(segments[0].title, "Test Title");
+        assert_eq!(segments[0].start, 1000);
+        assert_eq!(segments[0].end, 2000);
     }
 }
