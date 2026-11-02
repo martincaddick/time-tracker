@@ -49,4 +49,34 @@ mod tests {
         };
         assert_eq!(segment.duration(), 0);
     }
+
+    #[test]
+    fn test_segment_positive_duration() {
+        let segment = Segment {
+            id: 1,
+            process: "test".to_string(),
+            title: "test title".to_string(),
+            start: 1000,
+            end: 1500,
+            active_secs: 500.0,
+            total_secs: 500.0,
+            entry_id: None,
+        };
+        assert_eq!(segment.duration(), 500);
+    }
+
+    #[test]
+    fn test_segment_negative_duration() {
+        let segment = Segment {
+            id: 1,
+            process: "test".to_string(),
+            title: "test title".to_string(),
+            start: 1500,
+            end: 1000,
+            active_secs: -500.0,
+            total_secs: -500.0,
+            entry_id: None,
+        };
+        assert_eq!(segment.duration(), -500);
+    }
 }
