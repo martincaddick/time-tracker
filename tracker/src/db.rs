@@ -11,8 +11,12 @@ pub fn data_dir() -> PathBuf {
     dir
 }
 
-fn connect() -> rusqlite::Result<Connection> {
-    let conn = Connection::open(data_dir().join("tracker.db"))?;
+fn connect(path: Option<&str>) -> rusqlite::Result<Connection> {
+    let db_path = match path {
+        Some(p) => p.to_string(),
+        None => data_dir().join("tracker.db").to_string_lossy().into_owned(),
+    };
+    let conn = Connection::open(db_path)?;
     conn.busy_timeout(Duration::from_secs(5))?;
     Ok(conn)
 }
@@ -21,7 +25,12 @@ fn connect() -> rusqlite::Result<Connection> {
 /// switches to WAL (so the page can read while the collector writes) and
 /// creates the tables. Doing this in one place avoids a start-up race.
 pub fn init() -> rusqlite::Result<()> {
-    let conn = connect()?;
+    let conn = connect(None)?;
+    init_db(&conn)
+}
+
+/// Internal initialization logic that takes an existing connection.
+pub fn init_db(conn: &Connection) -> rusqlite::Result<()> {
     let _mode: String = conn.query_row("PRAGMA journal_mode=WAL", [], |r| r.get(0))?;
     conn.execute_batch(
         "CREATE TABLE IF NOT EXISTS segments (
@@ -47,7 +56,7 @@ pub fn init() -> rusqlite::Result<()> {
 
 /// A plain connection for a worker thread (call `init` first).
 pub fn open() -> rusqlite::Result<Connection> {
-    connect()
+    connect(None)
 }
 
 pub fn log(msg: &str) {
@@ -58,5 +67,32 @@ pub fn log(msg: &str) {
         .open(data_dir().join("tracker.log"))
     {
         let _ = writeln!(f, "{msg}");
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rusqlite::Connection;
+
+    #[test]
+    fn test_init_creates_tables() {
+        // Use an in-memory database for testing
+        let conn = Connection::open_in_memory().expect("Failed to open in-memory db");
+
+        // Pass the in-memory connection to our init logic
+        init_db(&conn).expect("Failed to initialize database tables");
+
+        // Verify that the 'segments' table exists
+        let tables: Vec<String> = conn
+            .prepare("SELECT name FROM sqlite_master WHERE type='table'")
+            .unwrap()
+            .query_map([], |row| row.get(0))
+            .unwrap()
+            .collect::<Result<Vec<String>, _>>()
+            .unwrap();
+
+        assert!(tables.contains(&"segments".to_string()));
+        assert!(tables.contains(&"entries".to_string()));
     }
 }

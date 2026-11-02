@@ -26,6 +26,10 @@ cargo build \
   --target x86_64-pc-windows-gnu \
   --target-dir ~/tracker-target
 
+echo "Running tests..."
+cargo test --target x86_64-pc-windows-gnu --target-dir ~/tracker-target --message-format short
+
+echo "Tests passed. Finalizing build..."
 cp \
   ~/tracker-target/x86_64-pc-windows-gnu/release/tracker.exe \
   "$TARGET_EXE"

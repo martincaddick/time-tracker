@@ -79,4 +79,32 @@ mod tests {
         };
         assert_eq!(segment.duration(), -500);
     }
+
+    #[test]
+    fn test_segment_serialization() {
+        let segment = Segment {
+            id: 42,
+            process: "Test Process".to_string(),
+            title: "Test Title".to_string(),
+            start: 1000,
+            end: 2000,
+            active_secs: 1000.0,
+            total_secs: 1000.0,
+            entry_id: Some(1),
+        };
+
+        let json = serde_json::to_string(&segment).expect("Failed to serialize Segment");
+        assert!(json.contains("\"id\":42"));
+        assert!(json.contains("\"process\":\"Test Process\""));
+        assert!(json.contains("\"title\":\"Test Title\""));
+        assert!(json.contains("\"start\":1000"));
+        assert!(json.contains("\"end\":2000"));
+        assert!(json.contains("\"active_secs\":1000.0"));
+        assert!(json.contains("\"total_secs\":1000.0"));
+        assert!(json.contains("\"entry_id\":1"));
+
+        let deserialized: Segment =
+            serde_json::from_str(&json).expect("Failed to deserialize Segment");
+        assert_eq!(segment, deserialized);
+    }
 }
