@@ -1,11 +1,5 @@
-# Build artifacts
-target/
-tracker.exe
-
-# OS files
+.git/
 .DS_Store
-Thumbs.db
-
-# IDEs and editors
-.vscode/
-.idea/
+target/
+build_number.txt
+docs/ai-context.md
